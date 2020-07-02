@@ -35,16 +35,23 @@ from datetime import datetime, timedelta
 from dblib import create_connection, create_table
 from dblib import makeStationAPIcall, makeUsageAPIcall
 
+import argparse
+
 
 
 def main():
+	
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-r","--record15min", help="record 15 min session charging data",
+					action="store_true")
+	args = parser.parse_args()
 	### Note 1 to user: If database already exists, set boolUpdateStations to False
 	boolUpdateStations = True
 	boolUpdateSessions = True
 
 	### Note 2 to user: Adjust startTime below. Make sure to set it to be after the most recent record in the database.
-	startTime = datetime(2014, 1, 01, 00, 00, 00)
-	endTime   = datetime(2014, 1, 10, 00, 00, 00) 
+	startTime = datetime(2014, 1, 1, 0, 0, 0)
+	endTime   = datetime(2014, 1, 10, 0, 0, 0) 
 
 	#### Preliminaries ####
 	### Note 3 to user: Adjust path to database below.
@@ -120,6 +127,22 @@ def main():
 								FOREIGN KEY (userID) REFERENCES user(userID),
 								FOREIGN KEY (credentialID) REFERENCES payment(credentialID)
 						);"""
+						
+# 	ghoshp: added table for 15 min charging session data results
+						
+	min_session_table_sql = """ CREATE TABLE IF NOT EXISTS
+						fifteen_min_session(
+								stationID text,
+								portNumber integer,
+								sessionID integer,
+								stationTime text,
+								energyConsumed numeric,
+								peakPower numeric,
+								rollingPowerAvg numeric,
+								PRIMARY KEY (stationID, sessionID, portNumber, stationTime)
+								FOREIGN KEY (stationID) REFERENCES station(stationID),
+								FOREIGN KEY (sessionID) REFERENCES session(sessionID)
+						);"""
 
 
 	#### Create tables if not already created
@@ -137,6 +160,9 @@ def main():
 		create_table(conn, pricing_table_sql)
 		## create the PORT table
 		create_table(conn, port_table_sql)
+		## create 15min session table if flag is set
+		if args.record15min:
+			create_table(conn, min_session_table_sql)
 		print ("Tables Created")
 	else:
 		print("Error: unable to create database")
@@ -149,13 +175,13 @@ def main():
 		if boolUpdateSessions == True:
 			currTime = startTime
 			while(currTime!=endTime):
-				makeUsageAPIcall(conn, client, currTime)
+				makeUsageAPIcall(conn, client, currTime, args.record15min)
 				currTime += timedelta(days=1)
 
 	#### Finish and close connection
 	conn.commit() # save (commit) the changes
 	conn.close()
-	print "Completed task, saved to: ", database
+	print ("Completed task, saved to: %s" % database)
 
 
 if __name__== '__main__':

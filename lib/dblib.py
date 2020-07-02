@@ -49,7 +49,7 @@ def execute_cmd(conn, sqlcmd):
 
 ###############################################################
 ###### Functions for pulling data from ChargePoint API ########
-def makeUsageAPIcall(conn, client, tStart):
+def makeUsageAPIcall(conn, client, tStart, record15min):
 	"""
 	Inputs:    tStart: Start time for API call in datetime format. 
 						E.g. tStart=datetime(2018, 5, 30, 00, 00, 00)
@@ -65,6 +65,7 @@ def makeUsageAPIcall(conn, client, tStart):
 	# print("Number of records in time-frame: ", len(data.ChargingSessionData))
 
 	## Fill Sessions Table
+	sessionlist = []
 	for d in data.ChargingSessionData:
 		## enclose in try-except to avoid TypeError: int() argument must be a string or a number, not 'NoneType'
 		## when userID is None, and other errors
@@ -77,8 +78,11 @@ def makeUsageAPIcall(conn, client, tStart):
 			add_rows_user_table(conn, row_user)
 			row_payment = [str(d.credentialID)]
 			add_rows_payment_table(conn, row_payment)
+			sessionlist.append(d.sessionID)
 		except:
 			pass
+	if record15min:
+		make15minusageAPIcall(conn, client, sessionlist)
 
 
 def makeStationAPIcall(conn, client):
@@ -118,7 +122,19 @@ def makeStationAPIcall(conn, client):
 	# print("Finished filling station, port and pricing model!")
 
 
-
+def make15minusageAPIcall(conn, client, sessionlist):
+	print("Making 15 min usage API query..")
+	for sessionID in sessionlist:
+		usageSearchQuery = {'sessionID': sessionID}
+		data = client.service.get15minChargingSessionData(usageSearchQuery)
+		for d in data.fifteenminData:
+		## enclose in try-except to avoid TypeError: int() argument must be a string or a number, not 'NoneType'
+			try:
+				row_15minsession = [str(data.stationID), int(sessionID), int(data.portNumber), d.stationTime.strftime('%Y-%m-%d %H:%M:%S'), 
+							float(d.energyConsumed), float(d.peakPower), float(d.rollingPowerAvg)]
+				add_rows_15minsession_table(conn, row_15minsession)
+			except:
+				pass
 
 ###############################################################
 ######### Functions for adding rows into each table ###########
@@ -168,6 +184,16 @@ def add_rows_pricing_table(conn, row):
 
 def add_rows_port_table(conn, row):
 	sql = ''' INSERT OR IGNORE INTO port(portID, stationID, portNumber, Level, Connector, Voltage, Current, Power) 
+				VALUES(?,?,?,?,?,?,?,?)'''
+					 ##1 2 3 4 5 6 7 8
+	cur = conn.cursor()
+	cur.execute(sql, row)
+	return cur.lastrowid
+
+
+def add_rows_15minsession_table(conn, row):
+	sql = ''' INSERT OR IGNORE INTO fifteen_min_session(stationID, portNumber, sessionID, stationTime, 
+	energyConsumed, peakPower, rollingPowerAvg) 
 				VALUES(?,?,?,?,?,?,?,?)'''
 					 ##1 2 3 4 5 6 7 8
 	cur = conn.cursor()
