@@ -125,7 +125,7 @@ def makeStationAPIcall(conn, client):
 def make15minusageAPIcall(conn, client, sessionlist):
 	print("Making 15 min usage API query..")
 	for sessionID in sessionlist:
-		usageSearchQuery = {'sessionID': float(sessionID)}
+		usageSearchQuery = {'sessionID': int(sessionID)}
 		data = client.service.get15minChargingSessionData(usageSearchQuery)
 		for d in data.fifteenminData:
 		## enclose in try-except to avoid TypeError: int() argument must be a string or a number, not 'NoneType'
