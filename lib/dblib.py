@@ -125,12 +125,12 @@ def makeStationAPIcall(conn, client):
 def make15minusageAPIcall(conn, client, sessionlist):
 	print("Making 15 min usage API query..")
 	for sessionID in sessionlist:
-		usageSearchQuery = {'sessionID': sessionID}
+		usageSearchQuery = {'sessionID': float(sessionID)}
 		data = client.service.get15minChargingSessionData(usageSearchQuery)
 		for d in data.fifteenminData:
 		## enclose in try-except to avoid TypeError: int() argument must be a string or a number, not 'NoneType'
 			try:
-				row_15minsession = [str(data.stationID), int(sessionID), int(data.portNumber), d.stationTime.strftime('%Y-%m-%d %H:%M:%S'), 
+				row_15minsession = [str(data.stationID), int(data.sessionID), int(data.portNumber), d.stationTime.strftime('%Y-%m-%d %H:%M:%S'), 
 							float(d.energyConsumed), float(d.peakPower), float(d.rollingPowerAvg)]
 				add_rows_15minsession_table(conn, row_15minsession)
 			except:
