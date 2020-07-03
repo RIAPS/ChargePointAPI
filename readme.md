@@ -27,6 +27,8 @@ See Notebooks folder for an Exploratory Jupyter notebook. I was making use of pl
 https://na.chargepoint.com/UI/downloads/en/ChargePoint_Web_Services_API_Guide_Ver4.1_Rev4.pdf
 
 
+## Update
 
+To get the 15 min charging session break down run the "createEVdb.py" file with the "record15minsession" flag set: `python3 createEVdb.py -r`
 
 
