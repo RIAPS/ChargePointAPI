@@ -22,6 +22,7 @@ See Notebooks folder for an Exploratory Jupyter notebook. I was making use of pl
 ## Package Dependencies
 1. [Zeep](https://github.com/mvantellingen/python-zeep)
 2. [Sqlite3](https://docs.python.org/2/library/sqlite3.html)
+3. [PyYAML](https://pypi.org/project/PyYAML/)
 
 ## ChargePoint API Doc
 https://na.chargepoint.com/UI/downloads/en/ChargePoint_Web_Services_API_Guide_Ver4.1_Rev4.pdf
@@ -29,6 +30,7 @@ https://na.chargepoint.com/UI/downloads/en/ChargePoint_Web_Services_API_Guide_Ve
 
 ## Update
 
-To get the 15 min charging session break down run the "createEVdb.py" file with the "record15minsession" flag set: `python3 createEVdb.py -r`
+1. To get the 15 min charging session break down run the "createEVdb.py" file with the "record15minsession" flag set: `python3 createEVdb.py -r`
+2. The file "StationIds.yaml" must contain a list of Station Ids that have the required privilege to retrieve the 15 min charging session data.
 
 
