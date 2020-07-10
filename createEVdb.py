@@ -37,6 +37,8 @@ from dblib import makeStationAPIcall, makeUsageAPIcall
 
 import argparse
 
+import yaml
+
 
 
 def main():
@@ -48,6 +50,14 @@ def main():
 	### Note 1 to user: If database already exists, set boolUpdateStations to False
 	boolUpdateStations = True
 	boolUpdateSessions = True
+	
+	StationList = "StationIds.yaml"
+	
+	with open(StationList, 'r') as stream:
+		try:
+			out= yaml.safe_load(stream)
+		except yaml.YAMLError as exc:
+			print(exc)
 
 	### Note 2 to user: Adjust startTime below. Make sure to set it to be after the most recent record in the database.
 	startTime = datetime(2014, 1, 1, 0, 0, 0)
@@ -175,7 +185,7 @@ def main():
 		if boolUpdateSessions == True:
 			currTime = startTime
 			while(currTime!=endTime):
-				makeUsageAPIcall(conn, client, currTime, args.record15min)
+				makeUsageAPIcall(conn, client, currTime, args.record15min, out['StationIds'])
 				currTime += timedelta(days=1)
 
 	#### Finish and close connection

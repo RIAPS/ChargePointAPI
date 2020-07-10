@@ -49,11 +49,13 @@ def execute_cmd(conn, sqlcmd):
 
 ###############################################################
 ###### Functions for pulling data from ChargePoint API ########
-def makeUsageAPIcall(conn, client, tStart, record15min):
+def makeUsageAPIcall(conn, client, tStart, record15min, StationList = None):
 	"""
 	Inputs:    tStart: Start time for API call in datetime format. 
 						E.g. tStart=datetime(2018, 5, 30, 00, 00, 00)
 	Note: the tEnd parameter will be set to the end of the day, e.g. datetime(2018, 5, 30, 23, 59, 59)
+				record15min: Boolean flag to creat table for 15 min session data
+				StationList: List of Station Ids with 15 in data
 	"""
 	print("Making usage API query..")
 	tEnd = tStart + timedelta(hours=23, minutes=59, seconds=59)
@@ -78,10 +80,14 @@ def makeUsageAPIcall(conn, client, tStart, record15min):
 			add_rows_user_table(conn, row_user)
 			row_payment = [str(d.credentialID)]
 			add_rows_payment_table(conn, row_payment)
-			sessionlist.append(d.sessionID)
+			if StationList is not None:
+				if str(d.stationID) in StationList:
+					sessionlist.append(d.sessionID)
+			else:
+				sessionlist.append(d.sessionID)
 		except:
 			pass
-	if record15min:
+	if record15min and len(sessionlist) > 0:
 		make15minusageAPIcall(conn, client, sessionlist)
 
 
