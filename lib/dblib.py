@@ -131,15 +131,16 @@ def makeStationAPIcall(conn, client):
 def make15minusageAPIcall(conn, client, sessionlist):
 	print("Making 15 min usage API query..")
 	for sessionID in sessionlist:
-		usageSearchQuery = {'sessionID': int(sessionID)}
-		data = client.service.get15minChargingSessionData(usageSearchQuery)
+		data = client.service.get15minChargingSessionData(sessionID=sessionID) # usageSearchQuery)
 		for d in data.fifteenminData:
 		## enclose in try-except to avoid TypeError: int() argument must be a string or a number, not 'NoneType'
 			try:
-				row_15minsession = [str(data.stationID), int(data.sessionID), int(data.portNumber), d.stationTime.strftime('%Y-%m-%d %H:%M:%S'), 
-							float(d.energyConsumed), float(d.peakPower), float(d.rollingPowerAvg)]
+				row_15minsession = [str(data.stationID), int(data.portNumber), int(data.sessionID),  
+									d.stationTime.strftime('%Y-%m-%d %H:%M:%S'), 
+									float(d.energyConsumed), float(d.peakPower), float(d.rollingPowerAvg)]
 				add_rows_15minsession_table(conn, row_15minsession)
-			except:
+			except Error as e:
+				print(e)
 				pass
 
 ###############################################################
@@ -200,8 +201,8 @@ def add_rows_port_table(conn, row):
 def add_rows_15minsession_table(conn, row):
 	sql = ''' INSERT OR IGNORE INTO fifteen_min_session(stationID, portNumber, sessionID, stationTime, 
 	energyConsumed, peakPower, rollingPowerAvg) 
-				VALUES(?,?,?,?,?,?,?,?)'''
-					 ##1 2 3 4 5 6 7 8
+				VALUES(?,?,?,?,?,?,?)'''
+					 ##1 2 3 4 5 6 7
 	cur = conn.cursor()
 	cur.execute(sql, row)
 	return cur.lastrowid	

@@ -60,8 +60,8 @@ def main():
 			print(exc)
 
 	### Note 2 to user: Adjust startTime below. Make sure to set it to be after the most recent record in the database.
-	startTime = datetime(2014, 1, 1, 0, 0, 0)
-	endTime   = datetime(2014, 1, 10, 0, 0, 0) 
+	startTime = datetime(2020, 1, 1, 0, 0, 0)
+	endTime   = datetime(2020, 1, 10, 0, 0, 0) 
 
 	#### Preliminaries ####
 	### Note 3 to user: Adjust path to database below.
